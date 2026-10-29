@@ -245,7 +245,7 @@ body {
     <button class="btn" id="tow" type="button" aria-pressed="false">Tow truck · <span class="coin-dot"></span>120</button>
     <button class="btn" id="sound" type="button" aria-pressed="true">♪ Sound on</button>
     <button class="btn" id="glow" type="button" aria-pressed="true">✦ Glow on</button>
-    <button class="btn" id="privacy" type="button" hidden>Privacy</button>
+    <button class="btn" id="privacy" type="button" style="display:none">Privacy</button>
   </div>
 
   <section class="ranks" aria-labelledby="lb-title">
@@ -1162,7 +1162,7 @@ body {
       AD.interstitial = !!st.interstitial;
       if (S) hud();
     });
-    $('privacy').hidden = false;
+    $('privacy').style.display = '';
     $('privacy').addEventListener('click', async () => {
       const granted = await askConsent();
       AD.plugin.setConsent({ granted }).catch(() => {});

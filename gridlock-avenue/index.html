@@ -30,8 +30,8 @@
   --mono: "Overpass Mono", ui-monospace, Menlo, monospace;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--night); color: var(--ink); font: 17px/1.6 var(--font); overflow-x: hidden; }
+html { scroll-behavior: smooth; overflow-x: clip; }
+body { margin: 0; background: var(--night); color: var(--ink); font: 17px/1.6 var(--font); overflow-x: clip; }
 a { color: inherit; }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
 
@@ -45,7 +45,7 @@ a { color: inherit; }
 .lang button[aria-pressed="true"] { background: var(--paint); color: #1a1405; }
 
 /* hero */
-.hero { position: relative; padding: 72px 0 96px; isolation: isolate; }
+.hero { position: relative; padding: 72px 0 96px; isolation: isolate; overflow-x: clip; }
 .hero::before {
   content: ""; position: absolute; inset: -20% -10% 0; z-index: -1;
   background:
@@ -103,7 +103,8 @@ h2 { font-size: clamp(32px, 4.5vw, 52px); line-height: 1.04; letter-spacing: -.0
 /* districts */
 .phones { display: flex; gap: 22px; overflow-x: auto; padding: 36px 20px 30px; margin: 0 -20px; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .phones::-webkit-scrollbar { display: none; }
-.phone { flex: 0 0 236px; scroll-snap-align: center; text-align: center; }
+.phone { flex: 0 0 196px; margin: 0; scroll-snap-align: center; text-align: center; }
+@media (min-width: 1100px) { .phones { justify-content: center; overflow: visible; } }
 .phone .frame {
   position: relative; border-radius: 34px; padding: 9px; background: #05070a;
   box-shadow: 0 0 0 2px #2a313b, 0 30px 60px rgba(0,0,0,.5), 0 0 40px -6px var(--c);
@@ -122,6 +123,8 @@ h2 { font-size: clamp(32px, 4.5vw, 52px); line-height: 1.04; letter-spacing: -.0
 .feat .ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: rgba(242,194,48,.12); margin-bottom: 16px; }
 .feat h3 { margin: 0 0 6px; font-size: 20px; font-weight: 900; }
 .feat p { margin: 0; color: var(--muted); font-size: 15px; }
+.feat.wide { grid-column: span 3; display: grid; grid-template-columns: auto 1fr; gap: 0 18px; align-items: center; }
+.feat.wide .ico { grid-row: span 2; margin: 0; }
 .feat.big { grid-column: span 2; background: linear-gradient(135deg, #0e6a45, #0a3f2b); border-color: #1a8a5d; }
 .feat.big p { color: #cfe8db; }
 .combo { font: 700 54px var(--mono); color: var(--paint); line-height: 1; margin-top: 14px; text-shadow: 0 0 26px rgba(242,194,48,.5); }
@@ -153,7 +156,9 @@ footer a:hover { color: var(--ink); }
   .hero .wrap { grid-template-columns: 1fr; gap: 34px; }
   .art { width: min(78vw, 360px); order: -1; }
   .grid, .steps { grid-template-columns: 1fr; }
-  .feat.big { grid-column: auto; }
+  .feat.big, .feat.wide { grid-column: auto; }
+  .feat.wide { display: block; }
+  .feat.wide .ico { margin-bottom: 16px; }
   section { padding: 64px 0; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -202,11 +207,11 @@ footer a:hover { color: var(--ink); }
            data-tr="Güneşli liman caddelerinden karlı çatılara ve ışıl ışıl gece merkezine. Daha çok araba, daha sıkışık bloklar, daha zor düzenler.">From sunny harbour avenues to snowy rooftops and a glowing night downtown. More cars, tighter blocks, trickier layouts.</p>
       </div>
       <div class="phones">
-        <figure class="phone reveal" style="--c: var(--harbor)"><div class="frame"><img src="img/harbor.jpg" alt="Harbor District level" loading="lazy"></div><h3><span class="dot"></span>Harbor District</h3><p data-en="Exits 1–10 · sea breeze" data-tr="Çıkış 1–10 · deniz meltemi">Exits 1–10 · sea breeze</p></figure>
-        <figure class="phone reveal" style="--c: var(--oldtown)"><div class="frame"><img src="img/oldtown.jpg" alt="Old Town level" loading="lazy"></div><h3><span class="dot"></span>Old Town</h3><p data-en="Exits 11–20 · golden hour" data-tr="Çıkış 11–20 · altın saat">Exits 11–20 · golden hour</p></figure>
-        <figure class="phone reveal" style="--c: var(--snow)"><div class="frame"><img src="img/snow.jpg" alt="Snowfield Heights level" loading="lazy"></div><h3><span class="dot"></span>Snowfield Heights</h3><p data-en="Exits 21–30 · falling snow" data-tr="Çıkış 21–30 · yağan kar">Exits 21–30 · falling snow</p></figure>
-        <figure class="phone reveal" style="--c: var(--neon)"><div class="frame"><img src="img/neon.jpg" alt="Neon Downtown level" loading="lazy"></div><h3><span class="dot"></span>Neon Downtown</h3><p data-en="Exits 31–40 · night shift" data-tr="Çıkış 31–40 · gece vardiyası">Exits 31–40 · night shift</p></figure>
-        <figure class="phone reveal" style="--c: var(--autumn)"><div class="frame"><img src="img/autumn.jpg" alt="Autumn Park level" loading="lazy"></div><h3><span class="dot"></span>Autumn Park</h3><p data-en="Exits 41–50 · and the city keeps going" data-tr="Çıkış 41–50 · ve şehir bitmiyor">Exits 41–50 · and the city keeps going</p></figure>
+        <figure class="phone reveal" style="--c: var(--harbor)"><div class="frame"><img src="img/harbor.jpg" alt="Harbor District level"></div><h3><span class="dot"></span>Harbor District</h3><p data-en="Exits 1–10 · sea breeze" data-tr="Çıkış 1–10 · deniz meltemi">Exits 1–10 · sea breeze</p></figure>
+        <figure class="phone reveal" style="--c: var(--oldtown)"><div class="frame"><img src="img/oldtown.jpg" alt="Old Town level"></div><h3><span class="dot"></span>Old Town</h3><p data-en="Exits 11–20 · golden hour" data-tr="Çıkış 11–20 · altın saat">Exits 11–20 · golden hour</p></figure>
+        <figure class="phone reveal" style="--c: var(--snow)"><div class="frame"><img src="img/snow.jpg" alt="Snowfield Heights level"></div><h3><span class="dot"></span>Snowfield Heights</h3><p data-en="Exits 21–30 · falling snow" data-tr="Çıkış 21–30 · yağan kar">Exits 21–30 · falling snow</p></figure>
+        <figure class="phone reveal" style="--c: var(--neon)"><div class="frame"><img src="img/neon.jpg" alt="Neon Downtown level"></div><h3><span class="dot"></span>Neon Downtown</h3><p data-en="Exits 31–40 · night shift" data-tr="Çıkış 31–40 · gece vardiyası">Exits 31–40 · night shift</p></figure>
+        <figure class="phone reveal" style="--c: var(--autumn)"><div class="frame"><img src="img/autumn.jpg" alt="Autumn Park level"></div><h3><span class="dot"></span>Autumn Park</h3><p data-en="Exits 41–50 · and the city keeps going" data-tr="Çıkış 41–50 · ve şehir bitmiyor">Exits 41–50 · and the city keeps going</p></figure>
       </div>
     </div>
   </section>
@@ -229,7 +234,7 @@ footer a:hover { color: var(--ink); }
         <div class="feat reveal"><div class="ico">🏗️</div><h3 data-en="Tow truck" data-tr="Çekici">Tow truck</h3><p data-en="Hopelessly stuck? A crane drops from the sky and lifts any car out of the jam." data-tr="Çaresizce sıkıştın mı? Gökten bir vinç iner ve istediğin arabayı kaldırır.">Hopelessly stuck? A crane drops from the sky and lifts any car out of the jam.</p></div>
         <div class="feat reveal"><div class="ico">↩️</div><h3 data-en="Undo a bump" data-tr="Çarpmayı geri al">Undo a bump</h3><p data-en="Roll the last car back and get your combo back with it." data-tr="Son arabayı geri sar, komboyu da geri al.">Roll the last car back and get your combo back with it.</p></div>
         <div class="feat reveal"><div class="ico">🗺️</div><h3 data-en="City map" data-tr="Şehir haritası">City map</h3><p data-en="A transit map of every exit you've cleared. Replay any stop to collect all three stars." data-tr="Geçtiğin her çıkışın metro haritası. Üç yıldızı toplamak için istediğin durağı yeniden oyna.">A transit map of every exit you've cleared. Replay any stop to collect all three stars.</p></div>
-        <div class="feat reveal"><div class="ico">✨</div><h3 data-en="Toy-city 3D" data-tr="Oyuncak şehir 3D">Toy-city 3D</h3><p data-en="Glossy cars, soft shadows, glowing headlights and a camera that glides into every level." data-tr="Parlak arabalar, yumuşak gölgeler, ışıl ışıl farlar ve her bölüme süzülen kamera.">Glossy cars, soft shadows, glowing headlights and a camera that glides into every level.</p></div>
+        <div class="feat wide reveal"><div class="ico">✨</div><h3 data-en="Toy-city 3D" data-tr="Oyuncak şehir 3D">Toy-city 3D</h3><p data-en="Glossy cars, soft shadows, glowing headlights and a camera that glides into every level." data-tr="Parlak arabalar, yumuşak gölgeler, ışıl ışıl farlar ve her bölüme süzülen kamera.">Glossy cars, soft shadows, glowing headlights and a camera that glides into every level.</p></div>
       </div>
     </div>
   </section>

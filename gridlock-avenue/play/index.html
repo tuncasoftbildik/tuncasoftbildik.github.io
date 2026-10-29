@@ -183,6 +183,31 @@ body {
 .btn .coin-dot { width: 14px; height: 14px; }
 .how { font-size: 14px; line-height: 1.5; color: var(--muted); text-align: center; max-width: 52ch; justify-self: center; margin: 0; }
 .how b { color: var(--ink); font-weight: 600; }
+.sheet-wrap { position: fixed; inset: 0; z-index: 40; display: grid; align-items: end; background: rgba(8,10,14,.55); backdrop-filter: blur(4px); }
+.sheet { background: var(--panel); border-radius: 22px 22px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; max-width: 640px; width: 100%; margin: 0 auto; animation: rise .28s cubic-bezier(.2,1.1,.4,1); }
+@keyframes rise { from { transform: translateY(100%); } }
+.sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: #3a434d; justify-self: center; margin-bottom: 4px; }
+.sheet h2 { margin: 0; font-size: 22px; font-weight: 900; }
+.sheet .rows { display: grid; gap: 8px; }
+.sheet .rows .btn { width: 100%; justify-content: space-between; padding: 14px 16px; font-size: 16px; }
+.sheet .how { text-align: left; max-width: none; }
+html.native, html.native body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+html.native body { padding: env(safe-area-inset-top, 0px) 12px 0 !important; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+html.native .wrap { height: calc(100vh - env(safe-area-inset-top, 0px)); height: calc(100dvh - env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
+html.native .stage { flex: 1 1 auto; min-height: 0; height: auto !important; border-radius: 18px; }
+html.native .ranks, html.native .wrap > .how { display: none !important; }
+html.native .stats { gap: 6px; }
+html.native .stat { padding: 6px 10px 4px; }
+html.native .stat b { font-size: 18px; }
+html.native .toast { min-height: 18px; font-size: 13px; }
+html.native .controls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding-bottom: max(10px, env(safe-area-inset-bottom, 0px)); }
+html.native .controls .btn { flex-direction: column; justify-content: center; gap: 2px; padding: 8px 2px 6px; min-height: 58px; font-size: 11px; line-height: 1.1; border-radius: 14px; }
+html.native .controls .btn svg { width: 22px; height: 22px; }
+html.native .controls .btn small { font-size: 10px; opacity: .8; display: inline-flex; align-items: center; gap: 3px; }
+html.native .controls .btn small .coin-dot { width: 10px; height: 10px; }
+html.native .btn:hover { background: #232931; }
+html.native .btn:active { transform: scale(.94); }
+html.native .btn.primary:hover, html.native .btn.on:hover { background: var(--paint); }
 .toast { min-height: 20px; text-align: center; font-size: 14px; font-weight: 600; color: var(--danger); margin: 0; }
 
 .overlay {
@@ -321,7 +346,7 @@ body {
   const vertical = d => d === 'up' || d === 'down';
 
   let S = null;
-  let save = { level: 1, coins: 0, sound: true, glow: true, consent: null, best: {} };
+  let save = { level: 1, coins: 0, sound: true, glow: true, haptics: true, consent: null, best: {} };
   let audio = null;
 
   function load() {
@@ -807,8 +832,9 @@ body {
   function layout() {
     if (!renderer || !S) return;
     const w = stage.clientWidth;
-    const h = Math.round(Math.max(300, Math.min(w * 0.95, 640)));
-    stage.style.height = h + 'px';
+    let h;
+    if (document.documentElement.classList.contains('native')) h = Math.max(240, stage.clientHeight);
+    else { h = Math.round(Math.max(300, Math.min(w * 0.95, 640))); stage.style.height = h + 'px'; }
     renderer.setSize(w, h, false);
     if (composer) {
       composer.setPixelRatio(renderer.getPixelRatio());
@@ -1011,6 +1037,7 @@ body {
     }
     route = g;
     scene.add(g);
+    buzz('tick');
   }
   function hideRoute() {
     if (!route) return;
@@ -1057,11 +1084,14 @@ body {
     combo.textContent = '×' + S.combo;
     combo.classList.toggle('hot', S.combo >= 2);
     const hintAd = save.coins < HINT_COST && canReward();
-    $('hint').innerHTML = coinLabel('Hint', HINT_COST, hintAd);
+    $('hint').innerHTML = NATIVE ? tile('hint', 'Hint', hintAd ? '▶ Ad' : `<span class="coin-dot"></span>${HINT_COST}`) : coinLabel('Hint', HINT_COST, hintAd);
     $('hint').disabled = (save.coins < HINT_COST && !hintAd) || S.done || !S.cars.length;
     $('undo').disabled = save.coins < UNDO_COST || !S.history.length || (S.done && !S.stuck);
     const towAd = !S.freeTow && save.coins < TOW_COST && canReward();
-    $('tow').innerHTML = S.freeTow ? 'Tow truck · free' : coinLabel('Tow truck', TOW_COST, towAd);
+    $('tow').innerHTML = NATIVE
+      ? tile('tow', 'Tow', S.freeTow ? 'free' : towAd ? '▶ Ad' : `<span class="coin-dot"></span>${TOW_COST}`)
+      : S.freeTow ? 'Tow truck · free' : coinLabel('Tow truck', TOW_COST, towAd);
+    if (NATIVE) $('undo').innerHTML = tile('undo', 'Undo', `<span class="coin-dot"></span>${UNDO_COST}`);
     $('tow').disabled = !S.towMode && ((save.coins < TOW_COST && !towAd && !S.freeTow) || !S.cars.length || (S.done && !S.stuck));
     $('tow').classList.toggle('on', S.towMode);
     $('tow').setAttribute('aria-pressed', String(S.towMode));
@@ -1183,7 +1213,7 @@ body {
         <div class="card" role="dialog" aria-modal="true" aria-labelledby="pv-title" tabindex="-1" style="outline:none">
           <h2 id="pv-title">Your privacy</h2>
           <p>Gridlock Avenue is free because it shows ads. Our ad partner Unity LevelPlay and the ad networks it works with can use your device's advertising ID and how you use the app to pick ads for you.</p>
-          <p class="fine">If you choose non-personalised ads you still see ads, just not ones chosen for you. Coins, progress and levels are the same either way. You can change this any time with the Privacy button. <a href="https://tuncasoftbildik.github.io/gridlock-avenue/privacy.html" target="_blank" rel="noopener" style="color:#f2c230">Privacy policy</a></p>
+          <p class="fine">If you choose non-personalised ads you still see ads, just not ones chosen for you. Coins, progress and levels are the same either way. You can change this any time in Settings → Privacy. <a href="https://tuncasoftbildik.github.io/gridlock-avenue/privacy.html" target="_blank" rel="noopener" style="color:#f2c230">Privacy policy</a></p>
           <div class="row">
             <button class="btn primary" type="button" data-granted="1">Personalised ads</button>
             <button class="btn primary" type="button" data-granted="0">Non-personalised ads</button>
@@ -1488,6 +1518,10 @@ body {
   }
 
   async function postScore() {
+    if (gcReady) {
+      const exit = save.level - 1;
+      if (exit >= 1) GC.submit({ exit, stars: totalStars() }).catch(() => {});
+    }
     if (!DB || !myId || canWrite === false) return;
     const exit = Math.max(save.level - 1, Number(myRemote && myRemote.exit) || 0);
     const stars = Math.max(totalStars(), Number(myRemote && myRemote.stars) || 0);
@@ -1534,7 +1568,31 @@ body {
     o.connect(g).connect(audio.destination);
     o.start(now); o.stop(now + len + 0.02);
   }
+  // ---------- native shell extras: haptics, Game Center ----------
+  const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  const PLATFORM = NATIVE ? window.Capacitor.getPlatform() : 'web';
+  const HAPTICS = NATIVE ? window.Capacitor.registerPlugin('Haptics') : null;
+  const GC = NATIVE && PLATFORM === 'ios' ? window.Capacitor.registerPlugin('GameCenter') : null;
+  let gcReady = false;
+  const BUZZ = {
+    vroom: () => HAPTICS.impact({ style: 'MEDIUM' }),
+    honk: () => HAPTICS.impact({ style: 'HEAVY' }),
+    undo: () => HAPTICS.impact({ style: 'LIGHT' }),
+    crane: () => HAPTICS.impact({ style: 'MEDIUM' }),
+    win: () => HAPTICS.notification({ type: 'SUCCESS' }),
+    tick: () => HAPTICS.selectionChanged()
+  };
+  function buzz(kind) {
+    if (!HAPTICS || save.haptics === false || !BUZZ[kind]) return;
+    try { BUZZ[kind]().catch(() => {}); } catch (e) {}
+  }
+  function initGameCenter() {
+    if (!GC) return;
+    GC.signIn().then(r => { gcReady = !!(r && r.authenticated); if (gcReady) postScore(); }).catch(() => {});
+  }
+
   function sfx(kind) {
+    buzz(kind);
     if (!save.sound || !audio) return;
     try {
       if (kind === 'vroom') { tone('sawtooth', 110, 330, 0, 0.3, 0.05); tone('sine', 220, 520, 0, 0.24, 0.05); }
@@ -1575,6 +1633,72 @@ body {
     soundLabel();
     if (save.sound) wakeAudio();
   });
+  const ICON = {
+    map: '<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/>',
+    restart: '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/>',
+    hint: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+    undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+    tow: '<path d="M3 17V7h10v10"/><path d="M13 10h4l4 4v3h-8"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M6 7V3l8 4"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'
+  };
+  const svg = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
+  // In the app the buttons become a fixed toolbar: icon, short label, and the price underneath.
+  function tile(icon, text, sub) { return `${svg(icon)}<span>${text}</span>${sub ? `<small>${sub}</small>` : ''}`; }
+  function initAppShell() {
+    if (!NATIVE) return;
+    document.documentElement.classList.add('native');
+    $('map').innerHTML = tile('map', 'Map');
+    $('restart').innerHTML = tile('restart', 'Restart');
+    const gear = document.createElement('button');
+    gear.className = 'btn'; gear.type = 'button'; gear.id = 'settings';
+    gear.innerHTML = tile('gear', 'Settings');
+    gear.setAttribute('aria-label', 'Settings');
+    $('privacy').before(gear);
+    // sound, glow and privacy move into the settings sheet
+    const tray = document.createElement('div');
+    tray.id = 'settings-tray'; tray.style.display = 'none';
+    tray.append($('sound'), $('glow'), $('privacy'));
+    document.body.appendChild(tray);
+    gear.addEventListener('click', openSettings);
+  }
+  function hapticsLabel(b) {
+    b.textContent = save.haptics !== false ? '≋ Vibration on' : '≋ Vibration off';
+    b.setAttribute('aria-pressed', String(save.haptics !== false));
+  }
+  function openSettings() {
+    buzz('tick');
+    const o = document.createElement('div');
+    o.className = 'sheet-wrap';
+    o.innerHTML = `
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="st-title">
+        <div class="grab"></div>
+        <h2 id="st-title">Settings</h2>
+        <div class="rows" id="st-rows"></div>
+        <p class="how">Tap a car to drive it the way the arrow on its roof points. <b>Press and hold</b> a car to preview its route. If another car is in the way it <b>bumps</b> and stops. Clean exits in a row build a <b>combo</b> worth 10 coins times the combo. Spend coins to <b>undo</b> a bump or call the <b>tow truck</b>.</p>
+        <button class="btn primary" type="button" id="st-done">Done</button>
+      </div>`;
+    document.body.appendChild(o);
+    const rows = o.querySelector('#st-rows');
+    if (GC) {
+      const lb = document.createElement('button');
+      lb.className = 'btn'; lb.type = 'button'; lb.textContent = '🏆 Leaderboards';
+      lb.addEventListener('click', () => GC.show().catch(() => {}));
+      rows.appendChild(lb);
+    }
+    rows.append($('sound'), $('glow'));
+    if (HAPTICS) {
+      const hb = document.createElement('button');
+      hb.className = 'btn'; hb.type = 'button';
+      hapticsLabel(hb);
+      hb.addEventListener('click', () => { save.haptics = save.haptics === false; persist(); hapticsLabel(hb); buzz('tick'); });
+      rows.appendChild(hb);
+    }
+    if ($('privacy').style.display !== 'none') rows.appendChild($('privacy'));
+    const close = () => { $('settings-tray').append($('sound'), $('glow'), $('privacy')); o.remove(); };
+    o.querySelector('#st-done').addEventListener('click', close);
+    o.addEventListener('click', e => { if (e.target === o) close(); });
+  }
+
   function glowLabel() {
     $('glow').textContent = save.glow !== false ? '✦ Glow on' : '✦ Glow off';
     $('glow').setAttribute('aria-pressed', String(save.glow !== false));
@@ -1592,12 +1716,14 @@ body {
     soundLabel();
     glowLabel();
     if (!save.best || typeof save.best !== 'object') save.best = {};
+    initAppShell();
     initBoard();
     initAds();
+    initGameCenter();
     if (!init3D()) return;
     startLevel(save.level);
   }
-  window.claude?.hot?.snapshot?.(() => ({ level: save.level, coins: S ? S.coinsAtStart : save.coins, sound: save.sound, glow: save.glow, consent: save.consent, best: save.best }));
+  window.claude?.hot?.snapshot?.(() => ({ level: save.level, coins: S ? S.coinsAtStart : save.coins, sound: save.sound, glow: save.glow, haptics: save.haptics, consent: save.consent, best: save.best }));
   window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 })();
 </script>

@@ -4,33 +4,295 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gridlock Avenue — 3D traffic puzzle</title>
-<link rel="stylesheet" href="stil.css">
+<meta name="description" content="Tap the cars in the right order to clear the junction. A bright 3D traffic puzzle across five city districts. Play free in your browser.">
+<meta property="og:title" content="Gridlock Avenue — 3D traffic puzzle">
+<meta property="og:description" content="Tap the cars in the right order to clear the junction. Five districts, combos, tow trucks and route previews.">
+<meta property="og:image" content="https://tuncasoftbildik.github.io/gridlock-avenue/img/hero.jpg">
 <link rel="icon" href="ikon.png">
+<link rel="apple-touch-icon" href="ikon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800;900&family=Overpass+Mono:wght@700&display=swap">
+<style>
+:root {
+  --night: #0b0f14;
+  --night-2: #121821;
+  --panel: #19212b;
+  --line: #263240;
+  --sign: #0e6a45;
+  --sign-deep: #0a5236;
+  --sign-edge: #e8efe9;
+  --paint: #f2c230;
+  --ink: #eef2f5;
+  --muted: #9aa7b3;
+  --harbor: #2a78e4; --oldtown: #d9622b; --snow: #3d9fd0; --neon: #a74fe0; --autumn: #d98a12;
+  --font: "Overpass", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Overpass Mono", ui-monospace, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--night); color: var(--ink); font: 17px/1.6 var(--font); overflow-x: hidden; }
+a { color: inherit; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+/* top bar */
+.top { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px); background: rgba(11,15,20,.72); border-bottom: 1px solid rgba(255,255,255,.06); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: -.01em; text-decoration: none; }
+.brand img { width: 34px; height: 34px; border-radius: 9px; }
+.lang { display: flex; gap: 4px; background: var(--panel); border-radius: 999px; padding: 4px; }
+.lang button { font: 700 13px var(--font); color: var(--muted); background: none; border: 0; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--paint); color: #1a1405; }
+
+/* hero */
+.hero { position: relative; padding: 72px 0 96px; isolation: isolate; }
+.hero::before {
+  content: ""; position: absolute; inset: -20% -10% 0; z-index: -1;
+  background:
+    radial-gradient(40% 50% at 78% 40%, rgba(242,194,48,.28), transparent 70%),
+    radial-gradient(45% 55% at 15% 20%, rgba(14,106,69,.45), transparent 70%),
+    radial-gradient(35% 40% at 60% 90%, rgba(167,79,224,.25), transparent 70%);
+  filter: blur(10px);
+}
+.hero .wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; }
+.exit-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--sign); border-radius: 10px; padding: 7px 14px 6px;
+  box-shadow: inset 0 0 0 2px var(--sign), inset 0 0 0 4px var(--sign-edge), 0 5px 0 var(--sign-deep);
+  font: 800 13px var(--font); letter-spacing: .14em; text-transform: uppercase;
+}
+.exit-badge b { color: var(--paint); }
+h1 { font-size: clamp(44px, 7vw, 84px); line-height: .98; letter-spacing: -.035em; margin: 22px 0 18px; font-weight: 900; text-wrap: balance; }
+h1 .hl { color: var(--paint); text-shadow: 0 0 32px rgba(242,194,48,.45); }
+.lead { font-size: clamp(18px, 2vw, 21px); color: #cfd7de; max-width: 34ch; margin: 0 0 30px; }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+  font: 900 18px var(--font); padding: 16px 26px 14px; border-radius: 14px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn.play { background: var(--paint); color: #1a1405; box-shadow: 0 6px 0 #b88c12, 0 18px 40px rgba(242,194,48,.35); }
+.btn.play:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #b88c12, 0 24px 50px rgba(242,194,48,.45); }
+.btn.play:active { transform: translateY(4px); box-shadow: 0 2px 0 #b88c12; }
+.soon { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; font-weight: 700; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.soon i { width: 8px; height: 8px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 10px #3ddc84; animation: blink 1.6s infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+
+.art { position: relative; justify-self: center; width: min(100%, 470px); aspect-ratio: 1; }
+.art img { width: 100%; height: 100%; object-fit: cover; border-radius: 26%; box-shadow: 0 40px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08); animation: float 6s ease-in-out infinite; }
+.art::after { content: ""; position: absolute; inset: 12%; z-index: -1; border-radius: 50%; background: rgba(242,194,48,.35); filter: blur(60px); }
+@keyframes float { 50% { transform: translateY(-14px) rotate(-1.5deg); } }
+
+/* road divider */
+.road { height: 54px; background: #2b313a; position: relative; overflow: hidden; box-shadow: inset 0 6px 0 #3a414b, inset 0 -6px 0 #3a414b; }
+.road::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; margin-top: -2px; background: repeating-linear-gradient(90deg, var(--paint) 0 46px, transparent 46px 84px); animation: dash 1.4s linear infinite; width: 200%; }
+@keyframes dash { to { transform: translateX(-84px); } }
+.road .car { position: absolute; top: 9px; width: 64px; height: 36px; border-radius: 14px; animation: drive 9s linear infinite; }
+.road .car::before { content: ""; position: absolute; left: 18px; right: 12px; top: 6px; bottom: 6px; border-radius: 8px; background: rgba(20,24,30,.55); }
+.road .car::after { content: "→"; position: absolute; left: 22px; top: 3px; color: #fff; font: 900 20px var(--font); }
+.road .c1 { background: #e03b2f; animation-delay: 0s; }
+.road .c2 { background: #2a78e4; animation-delay: -3s; }
+.road .c3 { background: #f7c51b; animation-delay: -6s; }
+@keyframes drive { from { left: -80px; } to { left: 100%; } }
+
+section { padding: 90px 0; }
+.eyebrow { font: 800 13px var(--font); letter-spacing: .16em; text-transform: uppercase; color: var(--paint); }
+h2 { font-size: clamp(32px, 4.5vw, 52px); line-height: 1.04; letter-spacing: -.03em; margin: 10px 0 14px; font-weight: 900; text-wrap: balance; }
+.sub { color: var(--muted); max-width: 56ch; margin: 0; }
+
+/* districts */
+.phones { display: flex; gap: 22px; overflow-x: auto; padding: 36px 20px 30px; margin: 0 -20px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.phones::-webkit-scrollbar { display: none; }
+.phone { flex: 0 0 236px; scroll-snap-align: center; text-align: center; }
+.phone .frame {
+  position: relative; border-radius: 34px; padding: 9px; background: #05070a;
+  box-shadow: 0 0 0 2px #2a313b, 0 30px 60px rgba(0,0,0,.5), 0 0 40px -6px var(--c);
+  transition: transform .25s ease;
+}
+.phone:hover .frame { transform: translateY(-8px) rotate(-1deg); }
+.phone .frame::before { content: ""; position: absolute; top: 16px; left: 50%; width: 64px; height: 18px; margin-left: -32px; border-radius: 10px; background: #05070a; z-index: 2; }
+.phone img { display: block; width: 100%; aspect-ratio: 430 / 760; object-fit: cover; object-position: top; border-radius: 26px; }
+.phone h3 { margin: 18px 0 2px; font-size: 19px; font-weight: 900; }
+.phone p { margin: 0; color: var(--muted); font-size: 14px; }
+.phone .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: 6px; box-shadow: 0 0 10px var(--c); }
+
+/* features */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+.feat { background: linear-gradient(180deg, var(--panel), var(--night-2)); border: 1px solid var(--line); border-radius: 20px; padding: 24px; position: relative; overflow: hidden; }
+.feat .ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: rgba(242,194,48,.12); margin-bottom: 16px; }
+.feat h3 { margin: 0 0 6px; font-size: 20px; font-weight: 900; }
+.feat p { margin: 0; color: var(--muted); font-size: 15px; }
+.feat.big { grid-column: span 2; background: linear-gradient(135deg, #0e6a45, #0a3f2b); border-color: #1a8a5d; }
+.feat.big p { color: #cfe8db; }
+.combo { font: 700 54px var(--mono); color: var(--paint); line-height: 1; margin-top: 14px; text-shadow: 0 0 26px rgba(242,194,48,.5); }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; counter-reset: s; }
+.step { padding: 26px; border-radius: 20px; background: var(--night-2); border: 1px solid var(--line); }
+.step::before { counter-increment: s; content: counter(s); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: var(--sign); box-shadow: inset 0 0 0 2px var(--sign), inset 0 0 0 3.5px var(--sign-edge); font: 900 19px var(--font); margin-bottom: 14px; }
+.step h3 { margin: 0 0 6px; font-size: 19px; font-weight: 900; }
+.step p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* final */
+.final { text-align: center; padding: 100px 0 110px; position: relative; isolation: isolate; }
+.final::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(50% 60% at 50% 60%, rgba(14,106,69,.5), transparent 70%); }
+.final h2 { margin-inline: auto; }
+.final .ctas { justify-content: center; margin-top: 26px; }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
+footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+footer a { color: var(--muted); text-decoration: none; }
+footer a:hover { color: var(--ink); }
+
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+@media (max-width: 860px) {
+  .hero { padding: 40px 0 70px; }
+  .hero .wrap { grid-template-columns: 1fr; gap: 34px; }
+  .art { width: min(78vw, 360px); order: -1; }
+  .grid, .steps { grid-template-columns: 1fr; }
+  .feat.big { grid-column: auto; }
+  section { padding: 64px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+</style>
 </head>
 <body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="ikon.png" alt="">Gridlock Avenue</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-set="en" aria-pressed="true">EN</button>
+      <button type="button" data-set="tr" aria-pressed="false">TR</button>
+    </div>
+  </div>
+</header>
+
 <main>
-  <header>
-    <img src="ikon.png" alt="">
-    <div><div class="ad">Gridlock Avenue</div><div class="alt">3D traffic puzzle · 3D trafik bulmacası</div></div>
-  </header>
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="exit-badge"><span data-en="Now open" data-tr="Şimdi açık">Now open</span> · <b>Exit 1</b></span>
+        <h1 data-en='Clear the <span class="hl">junction.</span>' data-tr='Kavşağı <span class="hl">boşalt.</span>'>Clear the <span class="hl">junction.</span></h1>
+        <p class="lead" data-en="Every car points the way it can drive. Tap them in the right order and watch the city flow again."
+           data-tr="Her araba gidebileceği yönü gösterir. Onlara doğru sırayla dokun, şehir yeniden aksın.">Every car points the way it can drive. Tap them in the right order and watch the city flow again.</p>
+        <div class="ctas">
+          <a class="btn play" href="play/">▶ <span data-en="Play free in your browser" data-tr="Tarayıcıda ücretsiz oyna">Play free in your browser</span></a>
+          <span class="soon"><i></i><span data-en="App Store &amp; Google Play · coming soon" data-tr="App Store ve Google Play · çok yakında">App Store &amp; Google Play · coming soon</span></span>
+        </div>
+      </div>
+      <div class="art"><img src="img/hero.jpg" alt="A yellow taxi speeding out of a tiny 3D city junction" width="720" height="720"></div>
+    </div>
+  </section>
 
-  <h1>Clear the junction, one car at a time.</h1>
-  <p>Every car points the way it can drive. Tap a car to send it off, and if another car is in the way
-  it bumps and stops. Find the right order, build combos for clean exits and drive through five
-  districts, from the harbour to neon downtown.</p>
+  <div class="road" aria-hidden="true"><span class="car c1"></span><span class="car c2"></span><span class="car c3"></span></div>
 
-  <p lang="tr">Her araba gidebileceği yönü gösterir. Bir arabaya dokun, yola çıksın; önünde başka araba
-  varsa çarpıp durur. Doğru sırayı bul, temiz çıkışlarla kombo yap ve limandan neon şehir merkezine
-  beş semti geç.</p>
+  <section id="districts">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="eyebrow" data-en="Five districts" data-tr="Beş semt">Five districts</div>
+        <h2 data-en="A new part of town every ten exits." data-tr="Her on çıkışta şehrin yeni bir köşesi.">A new part of town every ten exits.</h2>
+        <p class="sub" data-en="From sunny harbour avenues to snowy rooftops and a glowing night downtown. More cars, tighter blocks, trickier layouts."
+           data-tr="Güneşli liman caddelerinden karlı çatılara ve ışıl ışıl gece merkezine. Daha çok araba, daha sıkışık bloklar, daha zor düzenler.">From sunny harbour avenues to snowy rooftops and a glowing night downtown. More cars, tighter blocks, trickier layouts.</p>
+      </div>
+      <div class="phones">
+        <figure class="phone reveal" style="--c: var(--harbor)"><div class="frame"><img src="img/harbor.jpg" alt="Harbor District level" loading="lazy"></div><h3><span class="dot"></span>Harbor District</h3><p data-en="Exits 1–10 · sea breeze" data-tr="Çıkış 1–10 · deniz meltemi">Exits 1–10 · sea breeze</p></figure>
+        <figure class="phone reveal" style="--c: var(--oldtown)"><div class="frame"><img src="img/oldtown.jpg" alt="Old Town level" loading="lazy"></div><h3><span class="dot"></span>Old Town</h3><p data-en="Exits 11–20 · golden hour" data-tr="Çıkış 11–20 · altın saat">Exits 11–20 · golden hour</p></figure>
+        <figure class="phone reveal" style="--c: var(--snow)"><div class="frame"><img src="img/snow.jpg" alt="Snowfield Heights level" loading="lazy"></div><h3><span class="dot"></span>Snowfield Heights</h3><p data-en="Exits 21–30 · falling snow" data-tr="Çıkış 21–30 · yağan kar">Exits 21–30 · falling snow</p></figure>
+        <figure class="phone reveal" style="--c: var(--neon)"><div class="frame"><img src="img/neon.jpg" alt="Neon Downtown level" loading="lazy"></div><h3><span class="dot"></span>Neon Downtown</h3><p data-en="Exits 31–40 · night shift" data-tr="Çıkış 31–40 · gece vardiyası">Exits 31–40 · night shift</p></figure>
+        <figure class="phone reveal" style="--c: var(--autumn)"><div class="frame"><img src="img/autumn.jpg" alt="Autumn Park level" loading="lazy"></div><h3><span class="dot"></span>Autumn Park</h3><p data-en="Exits 41–50 · and the city keeps going" data-tr="Çıkış 41–50 · ve şehir bitmiyor">Exits 41–50 · and the city keeps going</p></figure>
+      </div>
+    </div>
+  </section>
 
-  <h2>Support · Destek</h2>
-  <p><a href="mailto:tunca.bildik@gmail.com">tunca.bildik@gmail.com</a></p>
+  <section id="features">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="eyebrow" data-en="Why it's fun" data-tr="Neden keyifli">Why it's fun</div>
+        <h2 data-en="Small puzzle. Big satisfying vroom." data-tr="Küçük bulmaca. Büyük, tatlı bir vınnn.">Small puzzle. Big satisfying vroom.</h2>
+      </div>
+      <div class="grid">
+        <div class="feat big reveal">
+          <div class="ico">🔥</div>
+          <h3 data-en="Combos for clean exits" data-tr="Temiz çıkışa kombo">Combos for clean exits</h3>
+          <p data-en="Every car that leaves without a bump raises your combo, and each exit pays ten coins times the combo. One bump and it starts over."
+             data-tr="Çarpmadan çıkan her araba komboyu artırır, her çıkış kombonun on katı para kazandırır. Tek çarpma ve sıfırdan başlarsın.">Every car that leaves without a bump raises your combo, and each exit pays ten coins times the combo. One bump and it starts over.</p>
+          <div class="combo">×7 <span style="font-size:20px;color:#cfe8db">+70</span></div>
+        </div>
+        <div class="feat reveal"><div class="ico">🎯</div><h3 data-en="Route preview" data-tr="Rota önizlemesi">Route preview</h3><p data-en="Press and hold a car to see exactly where it goes, and the red mark where it would stop." data-tr="Arabaya basılı tut; nereye gideceğini ve duracağı yeri kırmızı işaretle gör.">Press and hold a car to see exactly where it goes, and the red mark where it would stop.</p></div>
+        <div class="feat reveal"><div class="ico">🏗️</div><h3 data-en="Tow truck" data-tr="Çekici">Tow truck</h3><p data-en="Hopelessly stuck? A crane drops from the sky and lifts any car out of the jam." data-tr="Çaresizce sıkıştın mı? Gökten bir vinç iner ve istediğin arabayı kaldırır.">Hopelessly stuck? A crane drops from the sky and lifts any car out of the jam.</p></div>
+        <div class="feat reveal"><div class="ico">↩️</div><h3 data-en="Undo a bump" data-tr="Çarpmayı geri al">Undo a bump</h3><p data-en="Roll the last car back and get your combo back with it." data-tr="Son arabayı geri sar, komboyu da geri al.">Roll the last car back and get your combo back with it.</p></div>
+        <div class="feat reveal"><div class="ico">🗺️</div><h3 data-en="City map" data-tr="Şehir haritası">City map</h3><p data-en="A transit map of every exit you've cleared. Replay any stop to collect all three stars." data-tr="Geçtiğin her çıkışın metro haritası. Üç yıldızı toplamak için istediğin durağı yeniden oyna.">A transit map of every exit you've cleared. Replay any stop to collect all three stars.</p></div>
+        <div class="feat reveal"><div class="ico">✨</div><h3 data-en="Toy-city 3D" data-tr="Oyuncak şehir 3D">Toy-city 3D</h3><p data-en="Glossy cars, soft shadows, glowing headlights and a camera that glides into every level." data-tr="Parlak arabalar, yumuşak gölgeler, ışıl ışıl farlar ve her bölüme süzülen kamera.">Glossy cars, soft shadows, glowing headlights and a camera that glides into every level.</p></div>
+      </div>
+    </div>
+  </section>
 
-  <footer>
-    <a href="privacy.html">Privacy Policy</a>
-    <a href="gizlilik.html">Gizlilik Politikası</a>
-    <span>© 2026 Tunca Bildik</span>
-  </footer>
+  <section id="how">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="eyebrow" data-en="How to play" data-tr="Nasıl oynanır">How to play</div>
+        <h2 data-en="Three seconds to learn." data-tr="Öğrenmesi üç saniye.">Three seconds to learn.</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal"><h3 data-en="Read the arrows" data-tr="Okları oku">Read the arrows</h3><p data-en="Each car can only drive straight, the way the arrow on its roof points." data-tr="Her araba yalnızca düz, çatısındaki okun gösterdiği yöne gidebilir.">Each car can only drive straight, the way the arrow on its roof points.</p></div>
+        <div class="step reveal"><h3 data-en="Tap to drive" data-tr="Dokun, gitsin">Tap to drive</h3><p data-en="A clear road means a clean exit. Another car in the way means a bump." data-tr="Yol açıksa temiz çıkış. Önünde araba varsa çarpma.">A clear road means a clean exit. Another car in the way means a bump.</p></div>
+        <div class="step reveal"><h3 data-en="Find the order" data-tr="Sırayı bul">Find the order</h3><p data-en="Empty the junction with as few bumps as you can to earn three stars." data-tr="Kavşağı olabildiğince az çarpmayla boşalt, üç yıldızı kap.">Empty the junction with as few bumps as you can to earn three stars.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="road" aria-hidden="true"><span class="car c3"></span><span class="car c1"></span></div>
+
+  <section class="final">
+    <div class="wrap reveal">
+      <h2 data-en="The light just turned green." data-tr="Işık az önce yeşile döndü.">The light just turned green.</h2>
+      <p class="sub" style="margin-inline:auto" data-en="No download, no sign-up. Start at Exit 1 right now." data-tr="İndirme yok, kayıt yok. Hemen Çıkış 1'den başla.">No download, no sign-up. Start at Exit 1 right now.</p>
+      <div class="ctas"><a class="btn play" href="play/">▶ <span data-en="Play Gridlock Avenue" data-tr="Gridlock Avenue'yu oyna">Play Gridlock Avenue</span></a></div>
+    </div>
+  </section>
 </main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Tunca Bildik</span>
+    <nav>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="gizlilik.html">Gizlilik Politikası</a>
+      <a href="mailto:tunca.bildik@gmail.com" data-en="Support" data-tr="Destek">Support</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const KEY = 'ga-site-lang';
+  function setLang(l) {
+    document.documentElement.lang = l;
+    document.querySelectorAll('[data-' + l + ']').forEach(el => { el.innerHTML = el.dataset[l]; });
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.set === l)));
+    try { localStorage.setItem(KEY, l); } catch (e) {}
+  }
+  let saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  const start = saved || ((navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en');
+  if (start !== 'en') setLang(start);
+  document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.set)));
+
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .15 }) : null;
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transitionDelay = (i % 3) * 80 + 'ms';
+    io ? io.observe(el) : el.classList.add('in');
+  });
+})();
+</script>
 </body>
 </html>

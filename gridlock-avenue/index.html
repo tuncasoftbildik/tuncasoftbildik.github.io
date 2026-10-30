@@ -74,9 +74,14 @@ h1 .hl { color: var(--paint); text-shadow: 0 0 32px rgba(242,194,48,.45); }
 .btn.play { background: var(--paint); color: #1a1405; box-shadow: 0 6px 0 #b88c12, 0 18px 40px rgba(242,194,48,.35); }
 .btn.play:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #b88c12, 0 24px 50px rgba(242,194,48,.45); }
 .btn.play:active { transform: translateY(4px); box-shadow: 0 2px 0 #b88c12; }
+.btn.gplay { background: #0b0f14; color: #fff; border: 1px solid #3a4652; padding: 10px 20px 9px; line-height: 1.05; }
+.btn.gplay span { display: flex; flex-direction: column; font-size: 19px; }
+.btn.gplay small { font: 700 11px var(--font); letter-spacing: .04em; text-transform: uppercase; color: #c3ccd4; }
+.btn.gplay:hover { transform: translateY(-2px); border-color: #6b7a88; }
 .soon { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; font-weight: 700; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 12px; }
 .soon i { width: 8px; height: 8px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 10px #3ddc84; animation: blink 1.6s infinite; }
 @keyframes blink { 50% { opacity: .35; } }
+@media (max-width: 600px) { .ctas .soon { flex-basis: 100%; } }
 
 .art { position: relative; justify-self: center; width: min(100%, 470px); aspect-ratio: 1; }
 .art img { width: 100%; height: 100%; object-fit: cover; border-radius: 26%; box-shadow: 0 40px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08); animation: float 6s ease-in-out infinite; }
@@ -188,7 +193,8 @@ footer a:hover { color: var(--ink); }
            data-tr="Her araba gidebileceği yönü gösterir. Onlara doğru sırayla dokun, şehir yeniden aksın.">Every car points the way it can drive. Tap them in the right order and watch the city flow again.</p>
         <div class="ctas">
           <a class="btn play" href="play/">▶ <span data-en="Play free in your browser" data-tr="Tarayıcıda ücretsiz oyna">Play free in your browser</span></a>
-          <span class="soon"><i></i><span data-en="App Store &amp; Google Play · coming soon" data-tr="App Store ve Google Play · çok yakında">App Store &amp; Google Play · coming soon</span></span>
+          <a class="btn gplay" href="https://play.google.com/store/apps/details?id=com.tuncabildik.gridlockavenue" target="_blank" rel="noopener"><svg width="20" height="22" viewBox="0 0 20 22" aria-hidden="true"><path d="M1 1.2 11.2 11 1 20.8c-.3-.2-.5-.6-.5-1.1V2.3c0-.5.2-.9.5-1.1z" fill="#00d7fe"/><path d="m14.6 7.6-3.4 3.4L1 1.2c.2-.1.6-.1 1 .1l12.6 6.3z" fill="#00f076"/><path d="m14.6 14.4-12.6 6.3c-.4.2-.8.2-1 .1L11.2 11l3.4 3.4z" fill="#ff3a44"/><path d="M18.4 9.5c.9.5.9 2.4 0 2.9l-3.8 2-3.4-3.4 3.4-3.4 3.8 1.9z" fill="#ffd400"/></svg><span><small data-en="Get it on" data-tr="Hemen indir">Get it on</small>Google Play</span></a>
+          <span class="soon"><i></i><span data-en="App Store · coming soon" data-tr="App Store · çok yakında">App Store · coming soon</span></span>
         </div>
       </div>
       <div class="art"><img src="img/hero.jpg" alt="A yellow taxi speeding out of a tiny 3D city junction" width="720" height="720"></div>
@@ -258,7 +264,7 @@ footer a:hover { color: var(--ink); }
     <div class="wrap reveal">
       <h2 data-en="The light just turned green." data-tr="Işık az önce yeşile döndü.">The light just turned green.</h2>
       <p class="sub" style="margin-inline:auto" data-en="No download, no sign-up. Start at Exit 1 right now." data-tr="İndirme yok, kayıt yok. Hemen Çıkış 1'den başla.">No download, no sign-up. Start at Exit 1 right now.</p>
-      <div class="ctas"><a class="btn play" href="play/">▶ <span data-en="Play Gridlock Avenue" data-tr="Gridlock Avenue'yu oyna">Play Gridlock Avenue</span></a></div>
+      <div class="ctas"><a class="btn play" href="play/">▶ <span data-en="Play Gridlock Avenue" data-tr="Gridlock Avenue'yu oyna">Play Gridlock Avenue</span></a><a class="btn gplay" href="https://play.google.com/store/apps/details?id=com.tuncabildik.gridlockavenue" target="_blank" rel="noopener"><svg width="20" height="22" viewBox="0 0 20 22" aria-hidden="true"><path d="M1 1.2 11.2 11 1 20.8c-.3-.2-.5-.6-.5-1.1V2.3c0-.5.2-.9.5-1.1z" fill="#00d7fe"/><path d="m14.6 7.6-3.4 3.4L1 1.2c.2-.1.6-.1 1 .1l12.6 6.3z" fill="#00f076"/><path d="m14.6 14.4-12.6 6.3c-.4.2-.8.2-1 .1L11.2 11l3.4 3.4z" fill="#ff3a44"/><path d="M18.4 9.5c.9.5.9 2.4 0 2.9l-3.8 2-3.4-3.4 3.4-3.4 3.8 1.9z" fill="#ffd400"/></svg><span><small data-en="Get it on" data-tr="Hemen indir">Get it on</small>Google Play</span></a></div>
     </div>
   </section>
 </main>
